@@ -1,0 +1,88 @@
+import Article from '../db/models/articleModel.js';
+import User from '../db/models/users.js';
+
+export const getAllArticles = async () => {
+  return await Article.find();
+};
+
+export const getArticleById = async (id) => {
+  return await Article.findById(id).populate('ownerId', 'name');
+};
+
+export const getRecommendedArticlesById = async (excludeId, limit = 3) => {
+  const randomArticles = await Article.aggregate([
+    { $match: { _id: { $ne: excludeId } } },
+    { $sample: { size: limit * 3 } },
+    { $project: { _id: 1 } },
+  ]);
+
+  const ids = randomArticles.map((doc) => doc._id);
+
+  const articles = await Article.find({ _id: { $in: ids } })
+    .populate('ownerId', 'name')
+    .limit(limit);
+
+  return articles;
+};
+
+export const getRecommendedArticles = async (tags = []) => {
+  return await Article.find({ tags: { $in: tags } }).limit(5);
+};
+
+export const getSavedArticles = async (userId) => {
+  const user = await User.findById(userId).populate('savedArticles');
+  return user?.savedArticles || [];
+};
+
+export const getPopularArticles = async (limit = 10) => {
+  return await Article.find().sort({ views: -1 }).limit(limit);
+};
+
+export const getPaginatedArticles = async ({
+  page = 1,
+  limit = 10,
+  sort = 'createdAt',
+  order = 'desc',
+  tags,
+  author,
+}) => {
+  const query = {};
+  if (tags) {
+    query.tags = { $in: tags.split(',') };
+  }
+  if (author) {
+    query.author = author;
+  }
+
+  const skip = (page - 1) * limit;
+  const sortObj = { [sort]: order === 'asc' ? 1 : -1 };
+
+  const [articles, total] = await Promise.all([
+    Article.find(query)
+      .populate('ownerId', 'name')
+      .sort(sortObj)
+      .skip(Number(skip))
+      .limit(Number(limit)),
+    Article.countDocuments(query),
+  ]);
+
+  return {
+    articles,
+    total,
+    page: Number(page),
+    pages: Math.ceil(total / limit),
+  };
+};
+
+export const createArticleService = async (payload) => {
+  const article = await Article.create(payload);
+  return article;
+};
+
+export const updateArticleService = async (id, updateData) => {
+  const updated = await Article.findByIdAndUpdate(id, updateData, {
+    new: true,
+    runValidators: true,
+  });
+  return updated;
+};

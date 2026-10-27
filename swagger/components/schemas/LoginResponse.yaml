@@ -1,0 +1,30 @@
+LoginResponse:
+  type: object
+  required: [status, message, data]
+  properties:
+    status:
+      type: integer
+      example: 200
+    message:
+      type: string
+      example: Successfully logged in a user!
+    data:
+      type: object
+      required: [accessToken, user]
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: 507f1f77bcf86cd799439011
+            name:
+              type: string
+              example: Adam Smith
+            email:
+              type: string
+              example: user@example.com
