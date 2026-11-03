@@ -1,5 +1,8 @@
 import multer from 'multer';
 import path from 'node:path';
+import createHttpError from 'http-errors';
+
+export const MAX_UPLOAD_SIZE_MB = 5;
 
 export const TEMP_UPLOAD_DIR = path.join(process.cwd(), 'src', 'uploads');//uploads
 
@@ -13,9 +16,18 @@ const storage = multer.diskStorage({
   },
 });
 
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(createHttpError(400, 'Only image files are allowed.'));
+  }
+};
+
 const upload = multer({
-    storage,
-    limits: { fileSize: 1 * 1024 * 1024 }
- });
+  storage,
+  fileFilter,
+  limits: { fileSize: MAX_UPLOAD_SIZE_MB * 1024 * 1024 },
+});
 
 export { upload };

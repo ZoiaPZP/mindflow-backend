@@ -1,5 +1,6 @@
 import { updateUserService } from "../services/userUpload.js";
 import { uploadCloud } from "../utils/uploadToClaudinary.js";
+import fs from "node:fs/promises";
 
 
 export async function uploadPhotoController(req, res, next) {
@@ -13,7 +14,12 @@ export async function uploadPhotoController(req, res, next) {
     }
 
     
-    const photoUrl = await uploadCloud(req.file.path);
+    let photoUrl;
+    try {
+      photoUrl = await uploadCloud(req.file.path);
+    } finally {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
 
    
     
@@ -31,13 +37,6 @@ export async function uploadPhotoController(req, res, next) {
       data: updatedUser,
     });
   } catch (error) {
-
-    if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({
-        status: 400,
-        message: 'File size limit exceeded (max 1MB).',
-      });
-    }
 
     console.error('Помилка у uploadPhotoController:', error);
     next(error);
