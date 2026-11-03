@@ -32,6 +32,7 @@ export const setupServer = () => {
 
     'https://mindflow-frontend.onrender.com',
     'https://mindflow-frontend.vercel.app',
+    'https://mindflow-zoia.vercel.app',
     'http://localhost:5176',
   ];
 
@@ -40,7 +41,7 @@ export const setupServer = () => {
       if (!origin || APP_DOMAIN.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(null, false);
       }
     },
     credentials: true,
