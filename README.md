@@ -64,7 +64,7 @@ Health check:
 
 ```bash
 # Clone the project
-git clone https://github.com/PushEaxVK/mindflow-backend.git
+git clone https://github.com/ZoiaPZP/mindflow-backend.git
 cd mindflow-backend
 
 # Checkout correct branch
